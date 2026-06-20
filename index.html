@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIFA World Cup 2026 — Teams, Players & Stats</title>
+<style>
+  :root{
+    --green:#006b3f; --green-dark:#00432a; --gold:#fcd116; --red:#ce1126; --black:#0a0a0a; --ink:#111; --muted:#666;
+    --bg:#fdfaf2; --card:#fff; --border:#e8e1c8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); line-height:1.5;}
+
+  /* ── Header ── */
+  header{background:linear-gradient(135deg,var(--red) 0%,var(--red) 33%,var(--gold) 33%,var(--gold) 66%,var(--green) 66%,var(--green) 100%); color:#fff; padding:20px 24px; position:sticky; top:0; z-index:50; box-shadow:0 2px 8px rgba(0,0,0,.25);}
+  header .top{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; background:rgba(10,10,10,.45); margin:-20px -24px 0; padding:14px 24px; backdrop-filter:blur(2px);}
+  header h1{font-size:1.3rem; display:flex; align-items:center; gap:10px; text-shadow:0 1px 3px rgba(0,0,0,.4); flex-shrink:0;}
+  header h1 span.badge{background:var(--black); color:var(--gold); font-size:.65rem; padding:2px 8px; border-radius:10px; font-weight:700; border:1px solid var(--gold);}
+  .global-search-wrap{position:relative; flex:1; max-width:320px;}
+  .global-search-wrap input{width:100%; padding:8px 14px 8px 36px; border-radius:20px; border:1px solid rgba(255,255,255,.4); background:rgba(255,255,255,.15); color:#fff; font-size:.85rem; outline:none;}
+  .global-search-wrap input::placeholder{color:rgba(255,255,255,.6);}
+  .global-search-wrap input:focus{background:rgba(255,255,255,.25); border-color:var(--gold);}
+  .global-search-wrap .gs-icon{position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:.9rem; pointer-events:none;}
+  #global-results{position:absolute; top:calc(100% + 6px); left:0; right:0; background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.15); max-height:320px; overflow-y:auto; z-index:300; display:none;}
+  #global-results.open{display:block;}
+  .gr-item{padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:.85rem; border-bottom:1px solid var(--border);}
+  .gr-item:last-child{border-bottom:none;}
+  .gr-item:hover{background:#fafaf5;}
+  .gr-item .gr-type{font-size:.65rem; font-weight:700; text-transform:uppercase; background:var(--border); color:var(--muted); padding:2px 6px; border-radius:6px; flex-shrink:0;}
+  header .sub{font-size:.8rem; opacity:.95; background:rgba(10,10,10,.45); padding:5px 24px; margin:0 -24px; text-shadow:0 1px 2px rgba(0,0,0,.4);}
+  nav{display:flex; gap:6px; flex-wrap:wrap; background:rgba(10,10,10,.45); margin:0 -24px -20px; padding:8px 24px 12px;}
+  nav button{background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25); color:#fff; padding:7px 14px; border-radius:20px; cursor:pointer; font-size:.82rem; transition:.15s; white-space:nowrap;}
+  nav button:hover{background:rgba(255,255,255,.25);}
+  nav button.active{background:var(--gold); color:var(--black); border-color:var(--gold); font-weight:700;}
+
+  main{max-width:1200px; margin:0 auto; padding:24px 16px;}
+  .view{display:none;}
+  .view.active{display:block; animation:fade .2s ease-in;}
+  @keyframes fade{from{opacity:0} to{opacity:1}}
+
+  /* ── Toolbar ── */
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; align-items:center;}
+  .toolbar input[type="text"]{flex:1; min-width:160px; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-size:.9rem;}
+  .toolbar select{padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:.9rem; background:#fff;}
+
+  /* ── Back button ── */
+  .back-btn{display:inline-flex; align-items:center; gap:6px; background:none; border:1px solid var(--border); padding:8px 16px; border-radius:8px; cursor:pointer; margin-bottom:16px; font-size:.88rem; color:var(--ink); transition:.15s;}
+  .back-btn:hover{background:#f4f1e8; border-color:var(--red); color:var(--red);}
+
+  /* ── Teams ── */
+  .teams-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px;}
+  .team-card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; cursor:pointer; transition:.15s; display:flex; align-items:center; gap:12px; position:relative;}
+  .team-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.08); transform:translateY(-2px); border-color:var(--red);}
+  .team-card.is-fav{border-color:var(--gold); box-shadow:0 0 0 2px rgba(252,209,22,.4);}
+  .team-card .fav-btn{position:absolute; top:8px; right:8px; background:none; border:none; font-size:1rem; cursor:pointer; opacity:.4; transition:.15s; line-height:1;}
+  .team-card .fav-btn:hover,.team-card.is-fav .fav-btn{opacity:1;}
+  .team-card .flag{font-size:2rem;}
+  .flag-img{height:1.1em; width:auto; vertical-align:middle; border-radius:2px; box-shadow:0 0 0 1px rgba(0,0,0,.08); object-fit:cover;}
+  .team-card .flag .flag-img{height:2rem; width:auto; border-radius:4px;}
+  .team-header .flag .flag-img{height:3.2rem; width:auto; border-radius:6px;}
+  .team-card .info h3{font-size:.95rem; margin-bottom:2px;}
+  .team-card .info p{font-size:.78rem; color:var(--muted);}
+  .group-tag{display:inline-block; background:var(--red); color:#fff; font-size:.68rem; padding:2px 7px; border-radius:10px; margin-top:4px; font-weight:700;}
+
+  /* ── Groups ── */
+  .groups-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(255px,1fr)); gap:14px;}
+  .group-card{background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden;}
+  .group-card h3{background:linear-gradient(90deg,var(--red),var(--gold),var(--green)); color:var(--black); padding:10px 16px; font-size:.95rem; font-weight:800; text-shadow:0 1px 0 rgba(255,255,255,.3);}
+  .group-card table{width:100%; border-collapse:collapse; font-size:.83rem;}
+  .group-card th,.group-card td{padding:7px 10px; text-align:left; border-bottom:1px solid var(--border);}
+  .group-card th{color:var(--muted); font-weight:600; font-size:.72rem; text-transform:uppercase;}
+  .group-card td.team-name{display:flex; align-items:center; gap:8px;}
+  .group-card tr:last-child td{border-bottom:none;}
+  .group-card td.num{text-align:center; color:var(--muted);}
+  .group-card td.num.pts{color:var(--ink); font-weight:700;}
+  .group-card .live-badge{font-size:.6rem; background:var(--red); color:#fff; padding:1px 5px; border-radius:6px; vertical-align:middle; margin-left:4px; animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .api-status{font-size:.72rem; color:var(--muted); padding:8px 16px; border-top:1px solid var(--border);}
+  .api-key-prompt{background:#fffbe6; border:1px solid var(--gold); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:.85rem; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .api-key-prompt input{flex:1; min-width:180px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:.85rem;}
+  .api-key-prompt button{padding:6px 14px; background:var(--green); color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:.85rem; font-weight:700;}
+
+  /* ── Fixtures ── */
+  .fixture-date-group{margin-bottom:24px;}
+  .fixture-date-label{font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); border-bottom:2px solid var(--border); padding-bottom:6px; margin-bottom:10px;}
+  .fixture-date-label.today-label{color:var(--red); border-color:var(--red);}
+  .fixtures-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:12px;}
+  .fixture-card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; cursor:pointer; transition:.15s;}
+  .fixture-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.08); transform:translateY(-2px); border-color:var(--red);}
+  .fixture-card .matchday{font-size:.68rem; color:var(--muted); text-transform:uppercase; font-weight:700; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;}
+  .fixture-card .teams{display:flex; align-items:center; justify-content:space-between; font-weight:600; font-size:.9rem; gap:6px;}
+  .fixture-card .score{font-size:1.1rem; font-weight:800; color:var(--red); text-align:center; min-width:40px;}
+  .fixture-card .score.score-live{color:#e63946; animation:pulse 1s infinite;}
+  .badge-ft{font-size:.6rem; font-weight:800; background:#555; color:#fff; border-radius:4px; padding:1px 5px; margin-left:4px; vertical-align:middle;}
+  .badge-live{font-size:.6rem; font-weight:800; background:#e63946; color:#fff; border-radius:4px; padding:1px 5px; margin-left:4px; vertical-align:middle; animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+  .fixture-card .vs{color:var(--muted); font-size:.8rem; min-width:24px; text-align:center;}
+  .fixture-card .group-label{display:inline-block; margin-top:8px; background:var(--red); color:#fff; font-size:.68rem; padding:2px 7px; border-radius:10px; font-weight:700;}
+  .fixture-card.fixture-today{border-color:var(--gold); box-shadow:0 0 0 2px rgba(252,209,22,.45);}
+  .fixture-card.fixture-past{opacity:.5; background:rgba(0,0,0,.03);}
+  .fixture-date-label.past-label{opacity:.6;}
+  .fixture-card.is-fav-match{border-left:3px solid var(--gold);}
+  .fixture-fav-filter{margin-bottom:8px;}
+  .fixture-fav-filter label{font-size:.85rem; display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--muted);}
+  .fixture-fav-filter input{accent-color:var(--gold);}
+
+  /* ── Team detail ── */
+  .team-header{display:flex; align-items:center; gap:18px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; flex-wrap:wrap;}
+  .team-header h2{font-size:1.5rem; margin-bottom:4px;}
+  .team-header p{color:var(--muted); font-size:.88rem;}
+
+  /* ── Roster table ── */
+  table.roster{width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden;}
+  table.roster th,table.roster td{padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.88rem;}
+  table.roster th{background:#f0f2f3; font-size:.72rem; text-transform:uppercase; color:var(--muted); cursor:pointer; user-select:none;}
+  table.roster th:hover{color:var(--red);}
+  table.roster tr:last-child td{border-bottom:none;}
+  table.roster tr:hover{background:#fafbfc;}
+  .pos-badge{display:inline-block; font-size:.68rem; font-weight:700; padding:2px 7px; border-radius:6px; color:#fff;}
+  .pos-GK{background:#888;}
+  .pos-DF{background:#2a6fbb;}
+  .pos-MF{background:#1f9d55;}
+  .pos-FW{background:#d64545;}
+
+  /* ── Matchup / Tactics ── */
+  .matchup-header{display:flex; align-items:center; justify-content:center; gap:20px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 20px; margin-bottom:16px; text-align:center; flex-wrap:wrap;}
+  .matchup-header .flag-img{height:2.2rem; width:auto; border-radius:4px;}
+  .matchup-header .vs-big{font-size:1.2rem; font-weight:800; color:var(--red);}
+  .matchup-header .matchup-meta{font-size:.78rem; color:var(--muted); margin-top:4px;}
+  .matchup-header .match-score{font-size:1.6rem; font-weight:900; color:var(--red); letter-spacing:.1em;}
+  .matchup-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .matchup-team-head{display:flex; align-items:center; gap:10px; font-weight:700; margin-bottom:8px; padding:10px 14px; background:linear-gradient(90deg,var(--red),var(--gold),var(--green)); color:var(--black); border-radius:8px; font-size:.9rem;}
+  .matchup-team-head .flag-img{height:1.4rem; width:auto; border-radius:3px;}
+
+  /* Formation selector */
+  .formation-bar{display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:10px; flex-wrap:wrap;}
+  .formation-bar label{font-size:.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;}
+  .formation-bar select{padding:5px 10px; border:1px solid var(--border); border-radius:8px; font-size:.82rem; background:#fff; cursor:pointer;}
+  .formation-bar select:focus{outline:none; border-color:var(--green);}
+
+  /* Pitch */
+  .pitch-wrap{margin-bottom:16px;}
+  .pitch-legend{display:flex; justify-content:center; gap:24px; margin-bottom:8px; font-size:.78rem; font-weight:700;}
+  .pitch-legend span{display:flex; align-items:center; gap:6px;}
+  .pitch-legend .swatch{width:13px; height:13px; border-radius:50%; border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.2);}
+  .pitch{position:relative; width:100%; aspect-ratio:3/4; max-width:480px; margin:0 auto; background:repeating-linear-gradient(0deg,#2f9e44 0,#2f9e44 10%,#38b34a 10%,#38b34a 20%); border:3px solid #fff; border-radius:8px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.15);}
+  .pitch-line.halfway{position:absolute; top:50%; left:0; right:0; height:2px; background:rgba(255,255,255,.7);}
+  .pitch-circle{position:absolute; top:50%; left:50%; width:80px; height:80px; border:2px solid rgba(255,255,255,.7); border-radius:50%; transform:translate(-50%,-50%);}
+  .pitch-box{position:absolute; left:50%; width:55%; height:14%; border:2px solid rgba(255,255,255,.7); transform:translateX(-50%);}
+  .pitch-box.top{top:0; border-top:none;}
+  .pitch-box.bottom{bottom:0; border-bottom:none;}
+  .pitch-team{position:absolute; inset:0;}
+  .pitch-player{position:absolute; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center; gap:1px; text-align:center; z-index:2; cursor:pointer;}
+  .pitch-player .dot{width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.6rem; font-weight:800; color:#fff; border:2px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,.4); transition:transform .15s;}
+  .pitch-player:hover .dot{transform:scale(1.25);}
+  .pitch-player .pname{font-size:.55rem; font-weight:700; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.9); max-width:68px; line-height:1.1; text-align:center;}
+  .pitch-player.side-home .dot{background:var(--red);}
+  .pitch-player.side-away .dot{background:#0a3d8f;}
+  /* Player stat tooltip */
+  .player-tooltip{position:absolute; z-index:20; background:rgba(10,10,10,.93); color:#fff; border-radius:10px; padding:10px 13px; font-size:.75rem; min-width:160px; box-shadow:0 4px 20px rgba(0,0,0,.5); pointer-events:none; transform:translate(-50%,-108%); white-space:nowrap;}
+  .player-tooltip .pt-name{font-size:.85rem; font-weight:800; margin-bottom:4px; color:var(--gold);}
+  .player-tooltip .pt-club{color:#aaa; font-size:.7rem; margin-bottom:6px;}
+  .player-tooltip .pt-stats{display:grid; grid-template-columns:1fr 1fr; gap:3px 12px;}
+  .player-tooltip .pt-stat{display:flex; flex-direction:column; align-items:center;}
+  .player-tooltip .pt-val{font-size:1rem; font-weight:800; color:#fff;}
+  .player-tooltip .pt-lbl{font-size:.6rem; color:#888; text-transform:uppercase;}
+
+  /* ── Feedback ── */
+  #feedback-btn{position:fixed; bottom:90px; right:20px; z-index:200; background:var(--green); color:#fff; border:none; border-radius:24px; padding:10px 18px; font-size:.85rem; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.25); transition:transform .15s,background .15s;}
+  #feedback-btn:hover{background:var(--green-dark); transform:scale(1.05);}
+  #feedback-overlay{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:900; display:none; backdrop-filter:blur(2px);}
+  #feedback-modal{position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(.95); z-index:901; background:#fff; border-radius:16px; width:min(480px,95vw); max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3); display:none; opacity:0; transition:opacity .2s,transform .2s;}
+  #feedback-modal.open{opacity:1; transform:translate(-50%,-50%) scale(1);}
+  .fb-header{display:flex; justify-content:space-between; align-items:center; padding:18px 20px 14px; border-bottom:1px solid var(--border); font-weight:800; font-size:1rem;}
+  .fb-header button{background:none; border:none; font-size:1.1rem; cursor:pointer; color:var(--muted); line-height:1;}
+  .fb-header button:hover{color:var(--ink);}
+  .fb-sub{color:var(--muted); font-size:.85rem; padding:12px 20px 0;}
+  .fb-field{padding:12px 20px 0;}
+  .fb-field label{display:block; font-size:.82rem; font-weight:700; margin-bottom:6px; color:var(--ink);}
+  .fb-field select,.fb-field textarea,.fb-field input{width:100%; border:1px solid var(--border); border-radius:8px; padding:9px 12px; font-size:.88rem; font-family:inherit; outline:none; background:#fafaf5; transition:border-color .15s;}
+  .fb-field select:focus,.fb-field textarea:focus,.fb-field input:focus{border-color:var(--green);}
+  .fb-field textarea{resize:vertical; min-height:90px;}
+  .fb-stars{display:flex; gap:6px; font-size:1.8rem; cursor:pointer; margin-top:2px;}
+  .fb-stars span{color:#ddd; transition:color .1s; user-select:none;}
+  .fb-stars span.active{color:var(--gold);}
+  .fb-stars span:hover{color:var(--gold);}
+  #fb-error{color:var(--red); font-size:.8rem; padding:6px 20px 0; min-height:20px;}
+  .fb-submit-btn{display:block; width:calc(100% - 40px); margin:14px 20px 16px; background:var(--green); color:#fff; border:none; border-radius:10px; padding:12px; font-size:.95rem; font-weight:700; cursor:pointer; transition:background .15s;}
+  .fb-submit-btn:hover{background:var(--green-dark);}
+  .fb-recent-wrap{padding:0 20px 20px;}
+  .fb-recent-title{font-size:.78rem; font-weight:800; text-transform:uppercase; color:var(--muted); margin-bottom:8px; letter-spacing:.05em;}
+  .fb-entry{background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; margin-bottom:8px; font-size:.82rem;}
+  .fb-entry .fb-entry-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
+  .fb-entry .fb-entry-stars{color:var(--gold); font-size:.9rem;}
+  .fb-entry .fb-entry-meta{font-size:.72rem; color:var(--muted);}
+  .fb-entry .fb-entry-cat{display:inline-block; background:var(--border); border-radius:6px; padding:1px 6px; font-size:.68rem; font-weight:700; color:var(--muted); margin-left:4px;}
+  .fb-entry .fb-entry-text{color:var(--ink); line-height:1.45;}
+  .fb-thanks-icon{font-size:3rem; text-align:center; padding:24px 0 8px;}
+  #fb-thanks-view h3{text-align:center; font-size:1.2rem; margin-bottom:8px;}
+  #fb-thanks-view p{text-align:center; color:var(--muted); font-size:.88rem; padding:0 20px;}
+
+  /* Stat comparison */
+  .stat-compare{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:16px;}
+  .stat-compare h3{text-align:center; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:12px;}
+  .stat-row{display:grid; grid-template-columns:1fr 2fr 1fr; align-items:center; gap:8px; margin-bottom:8px; font-size:.82rem;}
+  .stat-row .val{font-weight:700; text-align:center;}
+  .stat-row .label{text-align:center; color:var(--muted); font-size:.72rem; text-transform:uppercase;}
+  .stat-bar{display:flex; height:7px; border-radius:4px; overflow:hidden; background:var(--border);}
+  .stat-bar .home-bar{background:var(--red);}
+  .stat-bar .away-bar{background:#0a3d8f;}
+
+  /* ── Bracket view ── */
+  .bracket-wrap{overflow-x:auto; padding-bottom:16px;}
+  .bracket{display:flex; gap:0; min-width:900px;}
+  .bracket-round{display:flex; flex-direction:column; flex:1; padding:0 8px;}
+  .bracket-round-title{font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); text-align:center; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid var(--border);}
+  .bracket-slots{display:flex; flex-direction:column; justify-content:space-around; flex:1; gap:8px;}
+  .bracket-match{background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; cursor:pointer; transition:.15s;}
+  .bracket-match:hover{border-color:var(--red); box-shadow:0 2px 10px rgba(0,0,0,.08);}
+  .bracket-match.has-winner .bracket-team.winner{background:#fffbe6; font-weight:700; color:var(--green-dark);}
+  .bracket-team{display:flex; align-items:center; gap:8px; padding:7px 10px; font-size:.8rem; border-bottom:1px solid var(--border);}
+  .bracket-team:last-child{border-bottom:none;}
+  .bracket-team .bt-score{margin-left:auto; font-weight:700; min-width:16px; text-align:right;}
+  .bracket-team .bt-tbd{color:var(--muted); font-style:italic;}
+  .bracket-final{border:2px solid var(--gold);}
+  .bracket-champion{background:linear-gradient(90deg,var(--red),var(--gold),var(--green)); color:var(--black); padding:16px; border-radius:12px; text-align:center; font-weight:900; font-size:1rem; margin-top:12px; min-width:140px;}
+
+  /* ── Footer ── */
+  footer{text-align:center; color:var(--muted); font-size:.78rem; padding:28px 20px; border-top:1px solid var(--border); margin-top:20px;}
+  .empty-msg{text-align:center; color:var(--muted); padding:40px; font-size:.9rem;}
+
+  /* ── Chatbot ── */
+  #chatbot-launcher{position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,var(--red),var(--green)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25); z-index:200; border:2px solid var(--gold); transition:.15s;}
+  #chatbot-launcher:hover{transform:scale(1.08);}
+  #chatbot-panel{position:fixed; bottom:24px; right:24px; width:340px; max-width:calc(100vw - 32px); height:480px; max-height:calc(100vh - 100px); background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,.25); display:none; flex-direction:column; overflow:hidden; z-index:201;}
+  #chatbot-panel.open{display:flex;}
+  .chatbot-header{background:linear-gradient(90deg,var(--red),var(--gold),var(--green)); color:var(--black); font-weight:800; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; font-size:.9rem;}
+  .chatbot-header button{background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--black);}
+  .chatbot-messages{flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:8px; font-size:.83rem; background:var(--bg);}
+  .chat-msg{max-width:85%; padding:8px 12px; border-radius:12px; line-height:1.4;}
+  .chat-msg.bot{background:#fff; border:1px solid var(--border); align-self:flex-start; border-bottom-left-radius:2px;}
+  .chat-msg.user{background:var(--green); color:#fff; align-self:flex-end; border-bottom-right-radius:2px;}
+  .chat-msg ul{margin:6px 0 0 18px;}
+  .chat-msg a{color:var(--red); text-decoration:underline; cursor:pointer;}
+  .chatbot-suggestions{display:flex; gap:6px; flex-wrap:wrap; padding:8px 12px; border-top:1px solid var(--border);}
+  .chatbot-suggestions button{background:#fff; border:1px solid var(--border); border-radius:14px; padding:4px 9px; font-size:.7rem; cursor:pointer; color:var(--ink);}
+  .chatbot-suggestions button:hover{border-color:var(--red); color:var(--red);}
+  .chatbot-input-row{display:flex; border-top:1px solid var(--border);}
+  .chatbot-input-row input{flex:1; border:none; padding:10px 12px; font-size:.83rem; outline:none;}
+  .chatbot-input-row button{background:var(--red); color:#fff; border:none; padding:0 14px; font-weight:700; cursor:pointer; font-size:.83rem;}
+  .chatbot-input-row button:hover{background:var(--green);}
+
+  /* ── Mobile ── */
+  @media(max-width:700px){
+    header h1{font-size:1rem;}
+    .global-search-wrap{max-width:100%; order:3; width:100%;}
+    nav{gap:4px; padding:6px 16px 10px;}
+    nav button{font-size:.75rem; padding:5px 10px;}
+    main{padding:14px 10px;}
+    .teams-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px;}
+    .matchup-grid{grid-template-columns:1fr;}
+    .pitch{aspect-ratio:2/3; max-width:100%;}
+    .pitch-player .dot{width:26px; height:26px; font-size:.5rem;}
+    .pitch-player .pname{font-size:.48rem; max-width:54px;}
+    .bracket{min-width:700px;}
+    .stat-row{font-size:.75rem;}
+    table.roster th,table.roster td{padding:7px 8px; font-size:.8rem;}
+    .matchup-header{gap:10px; padding:12px;}
+    .matchup-header .flag-img{height:1.6rem;}
+  }
+  @media(max-width:480px){
+    .groups-grid{grid-template-columns:1fr;}
+    .fixtures-grid{grid-template-columns:1fr;}
+    .toolbar{gap:6px;}
+    .toolbar input,.toolbar select{font-size:.82rem;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>⚽ FIFA World Cup 26 <span class="badge">★ Ghana Edition</span></h1>
+    <div class="global-search-wrap">
+      <span class="gs-icon">🔍</span>
+      <input type="text" id="global-search" placeholder="Search teams, players…" autocomplete="off">
+      <div id="global-results"></div>
+    </div>
+  </div>
+  <div class="sub" id="tournament-sub"></div>
+  <nav>
+    <button class="active" data-view="teams">Teams</button>
+    <button data-view="groups">Group Standings</button>
+    <button data-view="fixtures">Fixtures</button>
+    <button data-view="players">Players</button>
+    <button data-view="bracket">Bracket</button>
+  </nav>
+</header>
+
+<main>
+  <!-- TEAMS VIEW -->
+  <section class="view active" id="view-teams">
+    <div class="toolbar">
+      <input type="text" id="team-search" placeholder="Search teams…">
+      <select id="group-filter"><option value="">All Groups</option></select>
+      <select id="confed-filter"><option value="">All Confederations</option></select>
+    </div>
+    <div class="teams-grid" id="teams-grid"></div>
+  </section>
+
+  <!-- GROUPS VIEW -->
+  <section class="view" id="view-groups">
+    <div id="api-key-banner" class="api-key-prompt" style="display:none;">
+      🔑 <strong>Add live scores:</strong> Get a free API key at
+      <a href="https://www.football-data.org/" target="_blank">football-data.org</a>, then paste it here:
+      <input type="text" id="api-key-input" placeholder="Your API key…">
+      <button id="api-key-save">Save</button>
+      <button id="api-key-skip" style="background:var(--muted);">Skip</button>
+    </div>
+    <div class="groups-grid" id="groups-grid"></div>
+  </section>
+
+  <!-- FIXTURES VIEW -->
+  <section class="view" id="view-fixtures">
+    <div class="toolbar">
+      <select id="fixture-group-filter"><option value="">All Groups</option></select>
+      <select id="fixture-status-filter">
+        <option value="">All Matches</option>
+        <option value="upcoming">Upcoming</option>
+        <option value="today">Today</option>
+        <option value="past">Past</option>
+      </select>
+    </div>
+    <div class="fixture-fav-filter">
+      <label><input type="checkbox" id="fav-only-toggle"> ⭐ My team's fixtures only</label>
+    </div>
+    <div id="fixtures-container"></div>
+  </section>
+
+  <!-- PLAYERS VIEW -->
+  <section class="view" id="view-players">
+    <div class="toolbar">
+      <input type="text" id="player-search" placeholder="Search players or clubs…">
+      <select id="player-team-filter"><option value="">All Teams</option></select>
+      <select id="player-pos-filter">
+        <option value="">All Positions</option>
+        <option value="GK">Goalkeeper</option>
+        <option value="DF">Defender</option>
+        <option value="MF">Midfielder</option>
+        <option value="FW">Forward</option>
+      </select>
+    </div>
+    <table class="roster" id="players-table">
+      <thead>
+        <tr>
+          <th data-sort="name">Player</th>
+          <th data-sort="team">Team</th>
+          <th data-sort="pos">Pos</th>
+          <th data-sort="age">Age</th>
+          <th data-sort="club">Club</th>
+          <th data-sort="caps">Caps</th>
+          <th data-sort="goals">WC ⚽</th>
+          <th data-sort="assists">WC 🅰️</th>
+        </tr>
+      </thead>
+      <tbody id="players-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- BRACKET VIEW -->
+  <section class="view" id="view-bracket">
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px;">Knockout stage slots fill in as group stage results are confirmed. Click any match to view tactics.</p>
+    <div class="bracket-wrap">
+      <div class="bracket" id="bracket-tree"></div>
+    </div>
+  </section>
+
+  <!-- TEAM DETAIL VIEW -->
+  <section class="view" id="view-team-detail">
+    <button class="back-btn" id="back-from-team">← Back</button>
+    <div class="team-header" id="team-detail-header"></div>
+    <table class="roster">
+      <thead><tr><th>Player</th><th>Pos</th><th>Age</th><th>Club</th><th>Caps</th><th>WC ⚽</th><th>WC 🅰️</th></tr></thead>
+      <tbody id="team-detail-roster"></tbody>
+    </table>
+  </section>
+
+  <!-- MATCHUP / TACTICS VIEW -->
+  <section class="view" id="view-matchup">
+    <button class="back-btn" id="back-from-matchup">← Back to Fixtures</button>
+    <div class="matchup-header" id="matchup-header"></div>
+
+    <div class="pitch-wrap">
+      <div class="formation-bar">
+        <label>Home Formation</label>
+        <select id="home-formation">
+          <option value="4-3-3">4-3-3</option>
+          <option value="4-4-2">4-4-2</option>
+          <option value="3-5-2">3-5-2</option>
+          <option value="4-2-3-1">4-2-3-1</option>
+          <option value="5-3-2">5-3-2</option>
+        </select>
+        <label style="margin-left:16px;">Away Formation</label>
+        <select id="away-formation">
+          <option value="4-3-3">4-3-3</option>
+          <option value="4-4-2">4-4-2</option>
+          <option value="3-5-2">3-5-2</option>
+          <option value="4-2-3-1">4-2-3-1</option>
+          <option value="5-3-2">5-3-2</option>
+        </select>
+      </div>
+      <div class="pitch-legend" id="pitch-legend"></div>
+      <div class="pitch" id="matchup-pitch">
+        <div class="pitch-line halfway"></div>
+        <div class="pitch-circle"></div>
+        <div class="pitch-box top"></div>
+        <div class="pitch-box bottom"></div>
+        <div class="pitch-team" id="pitch-home"></div>
+        <div class="pitch-team" id="pitch-away"></div>
+      </div>
+    </div>
+
+    <div class="stat-compare" id="matchup-stats"></div>
+
+    <div class="matchup-grid">
+      <div class="matchup-team">
+        <div class="matchup-team-head" id="matchup-home-head"></div>
+        <table class="roster"><thead><tr><th>Player</th><th>Pos</th><th>Age</th><th>Club</th><th>Caps</th><th>WC ⚽</th><th>WC 🅰️</th></tr></thead>
+        <tbody id="matchup-home-roster"></tbody></table>
+      </div>
+      <div class="matchup-team">
+        <div class="matchup-team-head" id="matchup-away-head"></div>
+        <table class="roster"><thead><tr><th>Player</th><th>Pos</th><th>Age</th><th>Club</th><th>Caps</th><th>WC ⚽</th><th>WC 🅰️</th></tr></thead>
+        <tbody id="matchup-away-roster"></tbody></table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Team data: FIFA World Cup 26 Final Draw (Dec 5 2025) — 48 teams &amp; groups confirmed.
+  Player rosters are representative sample squads — official 23-man lists due closer to kickoff. Live scores via <a href="https://www.football-data.org/" target="_blank">football-data.org</a>.
+</footer>
+
+<!-- Feedback button + modal -->
+<button id="feedback-btn" title="Give feedback">💬 Feedback</button>
+
+<div id="feedback-overlay"></div>
+<div id="feedback-modal">
+  <div class="fb-header">
+    <span>💬 Share Your Feedback</span>
+    <button id="feedback-close">✕</button>
+  </div>
+
+  <div id="fb-form-view">
+    <p class="fb-sub">Help us improve the FIFA World Cup 2026 site!</p>
+
+    <div class="fb-field">
+      <label>How would you rate your experience?</label>
+      <div class="fb-stars" id="fb-stars">
+        <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+      </div>
+    </div>
+
+    <div class="fb-field">
+      <label>Category</label>
+      <select id="fb-category">
+        <option value="">Select a topic…</option>
+        <option value="Design">Design & Layout</option>
+        <option value="Scores">Scores & Results</option>
+        <option value="Players">Players & Stats</option>
+        <option value="Fixtures">Fixtures</option>
+        <option value="Bracket">Bracket</option>
+        <option value="Performance">Performance / Speed</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="fb-field">
+      <label>Your feedback <span style="color:var(--muted);font-size:.8rem;">(required)</span></label>
+      <textarea id="fb-text" placeholder="Tell us what you think…" rows="4"></textarea>
+    </div>
+
+    <div class="fb-field">
+      <label>Name <span style="color:var(--muted);font-size:.8rem;">(optional)</span></label>
+      <input type="text" id="fb-name" placeholder="Anonymous">
+    </div>
+
+    <div id="fb-error"></div>
+    <button id="fb-submit" class="fb-submit-btn">Submit Feedback ✈️</button>
+
+    <div class="fb-recent-wrap">
+      <div class="fb-recent-title">Recent Feedback</div>
+      <div id="fb-recent-list"></div>
+    </div>
+  </div>
+
+  <div id="fb-thanks-view" style="display:none;">
+    <div class="fb-thanks-icon">🎉</div>
+    <h3>Thank you!</h3>
+    <p>Your feedback has been recorded. We'll use it to make the site better.</p>
+    <button id="fb-back-btn" class="fb-submit-btn" style="margin-top:16px;">Back</button>
+  </div>
+</div>
+
+<!-- Floating chatbot -->
+<div id="chatbot-launcher" title="Ask me anything about the World Cup">💬</div>
+<div id="chatbot-panel">
+  <div class="chatbot-header">
+    ⚽ World Cup Assistant
+    <button id="chatbot-close">✕</button>
+  </div>
+  <div class="chatbot-messages" id="chatbot-messages"></div>
+  <div class="chatbot-suggestions" id="chatbot-suggestions"></div>
+  <form class="chatbot-input-row" id="chatbot-form">
+    <input type="text" id="chatbot-input" placeholder="Ask about teams, players, fixtures…" autocomplete="off">
+    <button type="submit">Send</button>
+  </form>
+</div>
+
+<script src="data.js?v=7"></script>
+<script src="app.js?v=7"></script>
+<script src="chatbot.js?v=7"></script>
+<script>
+// ── Feedback system ───────────────────────────────────────────────
+(function() {
+  const btn    = document.getElementById('feedback-btn');
+  const modal  = document.getElementById('feedback-modal');
+  const overlay= document.getElementById('feedback-overlay');
+  const closeBtn = document.getElementById('feedback-close');
+  const stars  = document.querySelectorAll('#fb-stars span');
+  const submitBtn = document.getElementById('fb-submit');
+  const backBtn   = document.getElementById('fb-back-btn');
+  const formView  = document.getElementById('fb-form-view');
+  const thanksView= document.getElementById('fb-thanks-view');
+  const errorEl   = document.getElementById('fb-error');
+  const recentList= document.getElementById('fb-recent-list');
+
+  let selectedRating = 0;
+
+  function openModal() {
+    overlay.style.display = 'block';
+    modal.style.display = 'block';
+    // allow display to apply before transition
+    requestAnimationFrame(() => modal.classList.add('open'));
+    formView.style.display = '';
+    thanksView.style.display = 'none';
+    renderRecent();
+  }
+  function closeModal() {
+    modal.classList.remove('open');
+    setTimeout(() => { modal.style.display = 'none'; overlay.style.display = 'none'; }, 200);
+  }
+
+  btn.addEventListener('click', openModal);
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', closeModal);
+  backBtn.addEventListener('click', () => { formView.style.display = ''; thanksView.style.display = 'none'; renderRecent(); });
+
+  // Star rating
+  stars.forEach(s => {
+    s.addEventListener('mouseenter', () => {
+      const v = +s.dataset.v;
+      stars.forEach(x => x.classList.toggle('active', +x.dataset.v <= v));
+    });
+    s.addEventListener('mouseleave', () => {
+      stars.forEach(x => x.classList.toggle('active', +x.dataset.v <= selectedRating));
+    });
+    s.addEventListener('click', () => {
+      selectedRating = +s.dataset.v;
+      stars.forEach(x => x.classList.toggle('active', +x.dataset.v <= selectedRating));
+    });
+  });
+
+  // Submit
+  submitBtn.addEventListener('click', () => {
+    const text = document.getElementById('fb-text').value.trim();
+    const cat  = document.getElementById('fb-category').value;
+    const name = document.getElementById('fb-name').value.trim() || 'Anonymous';
+    errorEl.textContent = '';
+    if (!text) { errorEl.textContent = '⚠️ Please write your feedback before submitting.'; return; }
+    if (!selectedRating) { errorEl.textContent = '⚠️ Please select a star rating.'; return; }
+
+    const entry = { name, rating: selectedRating, category: cat, text, ts: Date.now() };
+    try {
+      const all = JSON.parse(localStorage.getItem('wc26_feedback') || '[]');
+      all.unshift(entry);
+      localStorage.setItem('wc26_feedback', JSON.stringify(all.slice(0, 50))); // keep last 50
+    } catch {}
+
+    // Reset form
+    document.getElementById('fb-text').value = '';
+    document.getElementById('fb-category').value = '';
+    document.getElementById('fb-name').value = '';
+    selectedRating = 0;
+    stars.forEach(x => x.classList.remove('active'));
+
+    formView.style.display = 'none';
+    thanksView.style.display = '';
+  });
+
+  function renderRecent() {
+    try {
+      const all = JSON.parse(localStorage.getItem('wc26_feedback') || '[]');
+      if (!all.length) { recentList.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:4px 0;">No feedback yet — be the first!</div>'; return; }
+      recentList.innerHTML = all.slice(0, 5).map(e => {
+        const stars = '★'.repeat(e.rating) + '☆'.repeat(5 - e.rating);
+        const ago = timeAgo(e.ts);
+        const cat = e.category ? `<span class="fb-entry-cat">${e.category}</span>` : '';
+        return `<div class="fb-entry">
+          <div class="fb-entry-top">
+            <span><strong>${escHtml(e.name)}</strong>${cat}</span>
+            <span><span class="fb-entry-stars">${stars}</span> <span class="fb-entry-meta">${ago}</span></span>
+          </div>
+          <div class="fb-entry-text">${escHtml(e.text)}</div>
+        </div>`;
+      }).join('');
+    } catch { recentList.innerHTML = ''; }
+  }
+
+  function timeAgo(ts) {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return 'just now';
+    if (s < 3600) return Math.floor(s/60) + 'm ago';
+    if (s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+  }
+  function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+})();
+</script>
+</body>
+</html>
